@@ -5,7 +5,9 @@ using System.Collections.Generic;
 
 public class RotationSync : NetworkBehaviour {
 	
-	public Transform targetTransform;
+	public Transform XtargetTransform;
+	public Transform YtargetTransform;
+	public Transform ZtargetTransform;
 
 	private List<Quaternion> receivedRot = new List<Quaternion>();
 	
@@ -26,10 +28,11 @@ public class RotationSync : NetworkBehaviour {
 			if(Time.time < (lastUpdateTime + GetNetworkSendInterval())){
 				return;
 			}
+			rotation = Quaternion.Euler(XtargetTransform.eulerAngles.x,YtargetTransform.eulerAngles.y,ZtargetTransform.eulerAngles.z);
 			if (hasAuthority) {
-				Rpc_SendRotation(targetTransform.eulerAngles);
+				Rpc_SendRotation(rotation.eulerAngles);
 			} else {
-				Cmd_SendRotation(targetTransform.eulerAngles);
+				Cmd_SendRotation(rotation.eulerAngles);
 			}
 			lastUpdateTime = Time.time;
 		} else {
@@ -46,7 +49,7 @@ public class RotationSync : NetworkBehaviour {
 			}
 			
 			if(updateTargetRot){
-				rotation = targetTransform.rotation;
+				rotation = Quaternion.Euler(XtargetTransform.eulerAngles.x,YtargetTransform.eulerAngles.y,ZtargetTransform.eulerAngles.z);
 				float _speed = Quaternion.Angle(rotation,receivedRot[0])/GetNetworkSendInterval();
 
 				step = _speed * Time.fixedDeltaTime;
@@ -55,12 +58,15 @@ public class RotationSync : NetworkBehaviour {
 
 			rotation = Quaternion.RotateTowards(rotation,receivedRot[0],step);
 			
-			targetTransform.rotation = rotation;
-
+			XtargetTransform.rotation = Quaternion.Euler(rotation.eulerAngles.x,XtargetTransform.eulerAngles.y,XtargetTransform.eulerAngles.z);
+			YtargetTransform.rotation = Quaternion.Euler(YtargetTransform.eulerAngles.x,rotation.eulerAngles.y,YtargetTransform.eulerAngles.z);
+			ZtargetTransform.rotation = Quaternion.Euler(ZtargetTransform.eulerAngles.x,ZtargetTransform.eulerAngles.y,rotation.eulerAngles.z);
 			if(Quaternion.Angle(rotation,receivedRot[0]) < 0.1f){
 				
 				rotation = receivedRot[0];
-				targetTransform.rotation = rotation;
+				XtargetTransform.rotation = Quaternion.Euler(rotation.eulerAngles.x,XtargetTransform.eulerAngles.y,XtargetTransform.eulerAngles.z);
+				YtargetTransform.rotation = Quaternion.Euler(YtargetTransform.eulerAngles.x,rotation.eulerAngles.y,YtargetTransform.eulerAngles.z);
+				ZtargetTransform.rotation = Quaternion.Euler(ZtargetTransform.eulerAngles.x,ZtargetTransform.eulerAngles.y,rotation.eulerAngles.z);
 				updateTargetRot = true;
 				receivedRot.RemoveAt(0);
 				

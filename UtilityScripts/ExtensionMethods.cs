@@ -136,6 +136,43 @@ public static class ExtensionMethods
 
 	}
 
+	public static void ik(Transform End,Vector3 TargetPosition, Quaternion TargetRotation,float positionsWeight,float rotationWeight){
+		Transform Middle = End.parent;
+		Transform Start = Middle.parent;
+
+		TargetPosition = Vector3.Lerp (End.position,TargetPosition,positionsWeight);
+		TargetRotation = Quaternion.Slerp (End.rotation,TargetRotation,rotationWeight);
+
+		float a = Vector3.Distance(Middle.transform.position,End.transform.position);
+		float b = Vector3.Distance(Start.transform.position,TargetPosition);
+		float c = Vector3.Distance(Start.transform.position,Middle.transform.position);
+		Quaternion deltaRotation = Quaternion.Inverse (End.rotation) * TargetRotation;
+		Start.localRotation *= Quaternion.Slerp(Quaternion.identity,deltaRotation,0.33f);
+		Middle.localRotation *= Quaternion.Slerp(Quaternion.identity,deltaRotation,0.33f);
+		Vector3 CurrentDirection;
+		Vector3 NeededDirection;
+		if(b<a + c){
+			float MiddleAngle = Mathf.Acos((Mathf.Pow(a,2)+Mathf.Pow(c,2)-Mathf.Pow(b,2))/(2*a*c)) * Mathf.Rad2Deg;
+			float CurrentMiddleAngle = Vector3.Angle((Start.transform.position-Middle.transform.position),(End.transform.position - Middle.transform.position));
+			Vector3 Axis = Middle.transform.InverseTransformDirection(Vector3.Cross((Start.transform.position-Middle.transform.position),(End.transform.position - Middle.transform.position)));
+			float DeltaAngle = MiddleAngle - CurrentMiddleAngle;
+			Middle.transform.rotation *= Quaternion.AngleAxis(DeltaAngle,Axis);
+			CurrentDirection = Start.transform.InverseTransformDirection(End.transform.position - Start.transform.position);
+			NeededDirection = Start.transform.InverseTransformDirection(TargetPosition - Start.transform.position);
+			Start.transform.localRotation *= Quaternion.FromToRotation(CurrentDirection,NeededDirection);
+		}else{
+			CurrentDirection = Start.transform.InverseTransformDirection(Middle.transform.position - Start.transform.position);
+			NeededDirection = Start.transform.InverseTransformDirection(TargetPosition - Start.transform.position);
+			Start.transform.localRotation *= Quaternion.FromToRotation(CurrentDirection,NeededDirection);
+			CurrentDirection = Middle.transform.InverseTransformDirection(End.transform.position - Middle.transform.position);
+			NeededDirection = Middle.transform.InverseTransformDirection(TargetPosition - Middle.transform.position);
+			Middle.transform.localRotation *= Quaternion.FromToRotation(CurrentDirection,NeededDirection);
+		}
+		
+		End.rotation = TargetRotation;
+		
+	}
+
 	public static int BoolToInt(bool input){
 		if (input) {
 			return 1;

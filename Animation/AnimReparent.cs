@@ -21,9 +21,9 @@ public class AnimReparent : MonoBehaviour {
 	public string[] bonesNames;
 	public Vector3[] offset;
 	public Vector3[] offsetAngles;
-	public Transform parent;
-	public string pathToParent;
-	public bool preserveParentAngles = false;
+	public Transform[] parents;
+	public string[] pathsToParent;
+	public bool[] preserveParentAngles;
 	public AnimationClip clip;
 	private bool record = false;
 	private float time = 0;
@@ -43,11 +43,6 @@ public class AnimReparent : MonoBehaviour {
 			curves [i].boneRotZ = new AnimationCurve ();
 			curves [i].boneRotW = new AnimationCurve ();
 		}
-#if UNITY_EDITOR
-		if(pathToParent.Length==0){
-			pathToParent = AnimationUtility.CalculateTransformPath (parent, parent.root);
-		}
-#endif
 	}
 
 	void Record(){
@@ -61,11 +56,11 @@ public class AnimReparent : MonoBehaviour {
 			return;
 		}
 
-		if (preserveParentAngles) {
-			parent.rotation = parent.root.rotation;
-		}
 
 		for (int i = 0; i < bones.Length; i ++) {
+			if (preserveParentAngles[i]) {
+				parents[i].rotation = parents[i].root.rotation;
+			}
 
 			Vector3 _offset = Vector3.zero;
 			Vector3 _offsetAngles = Vector3.zero;
@@ -76,8 +71,8 @@ public class AnimReparent : MonoBehaviour {
 				_offsetAngles = offsetAngles[i];
 			}
 
-			Vector3 _targetPosition = parent.InverseTransformPoint(bones[i].position) + _offset;
-			Quaternion _targetRotation = Quaternion.LookRotation(parent.InverseTransformDirection(bones[i].forward),parent.InverseTransformDirection(bones[i].up)) * Quaternion.Euler(_offsetAngles);
+			Vector3 _targetPosition = parents[i].InverseTransformPoint(bones[i].position) + _offset;
+			Quaternion _targetRotation = Quaternion.LookRotation(parents[i].InverseTransformDirection(bones[i].forward),parents[i].InverseTransformDirection(bones[i].up)) * Quaternion.Euler(_offsetAngles);
 
 			curves [i].bonePosX.AddKey (time,_targetPosition.x);
 			curves [i].bonePosY.AddKey (time,_targetPosition.y);
@@ -93,15 +88,15 @@ public class AnimReparent : MonoBehaviour {
 				_boneName = bonesNames[i];
 			}
 
-			clip.SetCurve(pathToParent+"/"+_boneName,typeof(Transform),"localPosition.x",curves [i].bonePosX);
-			clip.SetCurve(pathToParent+"/"+_boneName,typeof(Transform),"localPosition.y",curves [i].bonePosY);
-			clip.SetCurve(pathToParent+"/"+_boneName,typeof(Transform),"localPosition.z",curves [i].bonePosZ);
+			clip.SetCurve(pathsToParent [i] +"/"+_boneName,typeof(Transform),"localPosition.x",curves [i].bonePosX);
+			clip.SetCurve(pathsToParent [i] +"/"+_boneName,typeof(Transform),"localPosition.y",curves [i].bonePosY);
+			clip.SetCurve(pathsToParent [i] + "/"+_boneName,typeof(Transform),"localPosition.z",curves [i].bonePosZ);
 
 			
-			clip.SetCurve(pathToParent+"/"+_boneName,typeof(Transform),"localRotation.x",curves [i].boneRotX);
-			clip.SetCurve(pathToParent+"/"+_boneName,typeof(Transform),"localRotation.y",curves [i].boneRotY);
-			clip.SetCurve(pathToParent+"/"+_boneName,typeof(Transform),"localRotation.z",curves [i].boneRotZ);
-			clip.SetCurve(pathToParent+"/"+_boneName,typeof(Transform),"localRotation.w",curves [i].boneRotW);
+			clip.SetCurve(pathsToParent [i]+"/"+_boneName,typeof(Transform),"localRotation.x",curves [i].boneRotX);
+			clip.SetCurve(pathsToParent [i]+"/"+_boneName,typeof(Transform),"localRotation.y",curves [i].boneRotY);
+			clip.SetCurve(pathsToParent [i]+"/"+_boneName,typeof(Transform),"localRotation.z",curves [i].boneRotZ);
+			clip.SetCurve(pathsToParent [i]+"/"+_boneName,typeof(Transform),"localRotation.w",curves [i].boneRotW);
 			
 
 			clip.EnsureQuaternionContinuity ();

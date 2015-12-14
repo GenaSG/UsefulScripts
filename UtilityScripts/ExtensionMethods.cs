@@ -48,28 +48,7 @@ public static class ExtensionMethods
 	}
 
 	public static void ik(Transform Start,Transform Middle,Transform End,Transform Target){
-		float a = Vector3.Distance(Middle.transform.position,End.transform.position);
-		float b = Vector3.Distance(Start.transform.position,Target.position);
-		float c = Vector3.Distance(Start.transform.position,Middle.transform.position);
-		Vector3 CurrentDirection;
-		Vector3 NeededDirection;
-		if(b<a + c){
-			float MiddleAngle = Mathf.Acos((Mathf.Pow(a,2)+Mathf.Pow(c,2)-Mathf.Pow(b,2))/(2*a*c)) * Mathf.Rad2Deg;
-			float CurrentMiddleAngle = Vector3.Angle((Start.transform.position-Middle.transform.position),(End.transform.position - Middle.transform.position));
-			Vector3 Axis = Middle.transform.InverseTransformDirection(Vector3.Cross((Start.transform.position-Middle.transform.position),(End.transform.position - Middle.transform.position)));
-			float DeltaAngle = MiddleAngle - CurrentMiddleAngle;
-			Middle.transform.rotation *= Quaternion.AngleAxis(DeltaAngle,Axis);
-			CurrentDirection = Start.transform.InverseTransformDirection(End.transform.position - Start.transform.position);
-			NeededDirection = Start.transform.InverseTransformDirection(Target.position - Start.transform.position);
-			Start.transform.localRotation *= Quaternion.FromToRotation(CurrentDirection,NeededDirection);
-		}else{
-			CurrentDirection = Start.transform.InverseTransformDirection(Middle.transform.position - Start.transform.position);
-			NeededDirection = Start.transform.InverseTransformDirection(Target.position - Start.transform.position);
-			Start.transform.localRotation *= Quaternion.FromToRotation(CurrentDirection,NeededDirection);
-			CurrentDirection = Middle.transform.InverseTransformDirection(End.transform.position - Middle.transform.position);
-			NeededDirection = Middle.transform.InverseTransformDirection(Target.position - Middle.transform.position);
-			Middle.transform.localRotation *= Quaternion.FromToRotation(CurrentDirection,NeededDirection);
-		}
+		ActualIK(End,Middle,Start,Target.position);
 		
 	}
 
@@ -77,28 +56,7 @@ public static class ExtensionMethods
 		Transform Middle = End.parent;
 		Transform Start = Middle.parent;
 
-		float a = Vector3.Distance(Middle.transform.position,End.transform.position);
-		float b = Vector3.Distance(Start.transform.position,TargetPosition);
-		float c = Vector3.Distance(Start.transform.position,Middle.transform.position);
-		Vector3 CurrentDirection;
-		Vector3 NeededDirection;
-		if(b<a + c){
-			float MiddleAngle = Mathf.Acos((Mathf.Pow(a,2)+Mathf.Pow(c,2)-Mathf.Pow(b,2))/(2*a*c)) * Mathf.Rad2Deg;
-			float CurrentMiddleAngle = Vector3.Angle((Start.transform.position-Middle.transform.position),(End.transform.position - Middle.transform.position));
-			Vector3 Axis = Middle.transform.InverseTransformDirection(Vector3.Cross((Start.transform.position-Middle.transform.position),(End.transform.position - Middle.transform.position)));
-			float DeltaAngle = MiddleAngle - CurrentMiddleAngle;
-			Middle.transform.rotation *= Quaternion.AngleAxis(DeltaAngle,Axis);
-			CurrentDirection = Start.transform.InverseTransformDirection(End.transform.position - Start.transform.position);
-			NeededDirection = Start.transform.InverseTransformDirection(TargetPosition - Start.transform.position);
-			Start.transform.localRotation *= Quaternion.FromToRotation(CurrentDirection,NeededDirection);
-		}else{
-			CurrentDirection = Start.transform.InverseTransformDirection(Middle.transform.position - Start.transform.position);
-			NeededDirection = Start.transform.InverseTransformDirection(TargetPosition - Start.transform.position);
-			Start.transform.localRotation *= Quaternion.FromToRotation(CurrentDirection,NeededDirection);
-			CurrentDirection = Middle.transform.InverseTransformDirection(End.transform.position - Middle.transform.position);
-			NeededDirection = Middle.transform.InverseTransformDirection(TargetPosition - Middle.transform.position);
-			Middle.transform.localRotation *= Quaternion.FromToRotation(CurrentDirection,NeededDirection);
-		}
+		ActualIK(End,Middle,Start,TargetPosition);
 		
 	}
 
@@ -106,31 +64,7 @@ public static class ExtensionMethods
 		Transform Middle = End.parent;
 		Transform Start = Middle.parent;
 		
-		float a = Vector3.Distance(Middle.transform.position,End.transform.position);
-		float b = Vector3.Distance(Start.transform.position,TargetPosition);
-		float c = Vector3.Distance(Start.transform.position,Middle.transform.position);
-		Quaternion deltaRotation = Quaternion.Inverse (End.rotation) * TargetRotation;
-		Start.localRotation *= Quaternion.Slerp(Quaternion.identity,deltaRotation,0.33f);
-		Middle.localRotation *= Quaternion.Slerp(Quaternion.identity,deltaRotation,0.33f);
-		Vector3 CurrentDirection;
-		Vector3 NeededDirection;
-		if(b<a + c){
-			float MiddleAngle = Mathf.Acos((Mathf.Pow(a,2)+Mathf.Pow(c,2)-Mathf.Pow(b,2))/(2*a*c)) * Mathf.Rad2Deg;
-			float CurrentMiddleAngle = Vector3.Angle((Start.transform.position-Middle.transform.position),(End.transform.position - Middle.transform.position));
-			Vector3 Axis = Middle.transform.InverseTransformDirection(Vector3.Cross((Start.transform.position-Middle.transform.position),(End.transform.position - Middle.transform.position)));
-			float DeltaAngle = MiddleAngle - CurrentMiddleAngle;
-			Middle.transform.rotation *= Quaternion.AngleAxis(DeltaAngle,Axis);
-			CurrentDirection = Start.transform.InverseTransformDirection(End.transform.position - Start.transform.position);
-			NeededDirection = Start.transform.InverseTransformDirection(TargetPosition - Start.transform.position);
-			Start.transform.localRotation *= Quaternion.FromToRotation(CurrentDirection,NeededDirection);
-		}else{
-			CurrentDirection = Start.transform.InverseTransformDirection(Middle.transform.position - Start.transform.position);
-			NeededDirection = Start.transform.InverseTransformDirection(TargetPosition - Start.transform.position);
-			Start.transform.localRotation *= Quaternion.FromToRotation(CurrentDirection,NeededDirection);
-			CurrentDirection = Middle.transform.InverseTransformDirection(End.transform.position - Middle.transform.position);
-			NeededDirection = Middle.transform.InverseTransformDirection(TargetPosition - Middle.transform.position);
-			Middle.transform.localRotation *= Quaternion.FromToRotation(CurrentDirection,NeededDirection);
-		}
+		ActualIK(End,Middle,Start,TargetPosition);
 
 		End.rotation = TargetRotation;
 
@@ -143,34 +77,30 @@ public static class ExtensionMethods
 		TargetPosition = Vector3.Lerp (End.position,TargetPosition,positionsWeight);
 		TargetRotation = Quaternion.Slerp (End.rotation,TargetRotation,rotationWeight);
 
-		float a = Vector3.Distance(Middle.transform.position,End.transform.position);
-		float b = Vector3.Distance(Start.transform.position,TargetPosition);
-		float c = Vector3.Distance(Start.transform.position,Middle.transform.position);
 		Quaternion deltaRotation = Quaternion.Inverse (End.rotation) * TargetRotation;
-		Start.localRotation *= Quaternion.Slerp(Quaternion.identity,deltaRotation,0.33f);
-		Middle.localRotation *= Quaternion.Slerp(Quaternion.identity,deltaRotation,0.33f);
-		Vector3 CurrentDirection;
-		Vector3 NeededDirection;
-		if(b<a + c){
-			float MiddleAngle = Mathf.Acos((Mathf.Pow(a,2)+Mathf.Pow(c,2)-Mathf.Pow(b,2))/(2*a*c)) * Mathf.Rad2Deg;
-			float CurrentMiddleAngle = Vector3.Angle((Start.transform.position-Middle.transform.position),(End.transform.position - Middle.transform.position));
-			Vector3 Axis = Middle.transform.InverseTransformDirection(Vector3.Cross((Start.transform.position-Middle.transform.position),(End.transform.position - Middle.transform.position)));
-			float DeltaAngle = MiddleAngle - CurrentMiddleAngle;
-			Middle.transform.rotation *= Quaternion.AngleAxis(DeltaAngle,Axis);
-			CurrentDirection = Start.transform.InverseTransformDirection(End.transform.position - Start.transform.position);
-			NeededDirection = Start.transform.InverseTransformDirection(TargetPosition - Start.transform.position);
-			Start.transform.localRotation *= Quaternion.FromToRotation(CurrentDirection,NeededDirection);
-		}else{
-			CurrentDirection = Start.transform.InverseTransformDirection(Middle.transform.position - Start.transform.position);
-			NeededDirection = Start.transform.InverseTransformDirection(TargetPosition - Start.transform.position);
-			Start.transform.localRotation *= Quaternion.FromToRotation(CurrentDirection,NeededDirection);
-			CurrentDirection = Middle.transform.InverseTransformDirection(End.transform.position - Middle.transform.position);
-			NeededDirection = Middle.transform.InverseTransformDirection(TargetPosition - Middle.transform.position);
-			Middle.transform.localRotation *= Quaternion.FromToRotation(CurrentDirection,NeededDirection);
-		}
-		
+		Start.localRotation *= Quaternion.Inverse(Quaternion.Slerp(Quaternion.identity,deltaRotation,0.33f));
+		ActualIK(End,Middle,Start,TargetPosition);
 		End.rotation = TargetRotation;
 		
+	}
+
+	static void ActualIK(Transform End,Transform Middle,Transform Start, Vector3 TargetPosition){
+
+		float a = End.localPosition.magnitude;
+		float b = Start.InverseTransformPoint(TargetPosition).magnitude;
+		float c = Middle.localPosition.magnitude;
+		b = Mathf.Clamp(b,0.0001f,(a + c) - 0.0001f);
+		float middleAngle = Mathf.Acos(Mathf.Clamp((Mathf.Pow(a,2)+Mathf.Pow(c,2)-Mathf.Pow(b,2))/(2*a*c),-1,1)) * Mathf.Rad2Deg;
+		Vector3 middleToStartDir = Middle.InverseTransformPoint (Start.position);
+		Vector3 middleToEndDir = Middle.InverseTransformPoint (End.position);
+		Vector3 middleAxis = Vector3.Cross (-middleToStartDir,middleToEndDir);
+		Middle.localRotation *= Quaternion.AngleAxis (Vector3.Angle (middleToStartDir, middleToEndDir) - middleAngle,middleAxis);
+
+		Vector3 startToEndDir = Start.InverseTransformPoint (End.position);
+		Vector3 startToTargetDir = Start.InverseTransformPoint (TargetPosition);
+		Vector3 startAxis = Vector3.Cross (startToEndDir,startToTargetDir);
+		Start.localRotation *= Quaternion.AngleAxis (Vector3.Angle (startToEndDir, startToTargetDir), startAxis);
+
 	}
 
 	public static int BoolToInt(bool input){

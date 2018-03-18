@@ -70,6 +70,18 @@ public static class ExtensionMethods
 
 	}
 
+	public static void ik(Transform Start,Transform Middle,Transform End,Transform Target,float positionsWeight,float rotationWeight){
+
+		Vector3 TargetPosition = Vector3.Lerp (End.position,Target.position,positionsWeight);
+		Quaternion TargetRotation = Quaternion.Slerp (End.rotation,Target.rotation,rotationWeight);
+
+		Quaternion deltaRotation = Quaternion.Inverse (End.rotation) * TargetRotation;
+		Start.localRotation *= Quaternion.Inverse(Quaternion.Slerp(Quaternion.identity,deltaRotation,0.33f));
+		ActualIK(End,Middle,Start,TargetPosition);
+		End.rotation = TargetRotation;
+
+	}
+
 	public static void ik(Transform End,Vector3 TargetPosition, Quaternion TargetRotation,float positionsWeight,float rotationWeight){
 		Transform Middle = End.parent;
 		Transform Start = Middle.parent;

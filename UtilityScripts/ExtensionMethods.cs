@@ -75,8 +75,11 @@ public static class ExtensionMethods
 		Vector3 TargetPosition = Vector3.Lerp (End.position,Target.position,positionsWeight);
 		Quaternion TargetRotation = Quaternion.Slerp (End.rotation,Target.rotation,rotationWeight);
 
+		//ActualIK(End,Middle,Start,TargetPosition);
+		Vector3 rotationAxis = Start.TransformDirection(Start.InverseTransformPoint (TargetPosition).normalized);
 		Quaternion deltaRotation = Quaternion.Inverse (End.rotation) * TargetRotation;
-		Start.localRotation *= Quaternion.Inverse(Quaternion.Slerp(Quaternion.identity,deltaRotation,0.33f));
+
+		Start.localRotation *= Quaternion.Slerp(Quaternion.identity,deltaRotation,0.5f);
 		ActualIK(End,Middle,Start,TargetPosition);
 		End.rotation = TargetRotation;
 
@@ -98,20 +101,25 @@ public static class ExtensionMethods
 
 	static void ActualIK(Transform End,Transform Middle,Transform Start, Vector3 TargetPosition){
 
-		float a = End.localPosition.magnitude;
-		float b = Start.InverseTransformPoint(TargetPosition).magnitude;
-		float c = Middle.localPosition.magnitude;
+		float a = Vector3.Distance (Middle.position,End.position);//End.localPosition.magnitude;
+		float b = Vector3.Distance(Start.position,TargetPosition);//Start.InverseTransformPoint(TargetPosition).magnitude;
+		float c = Vector3.Distance(Start.position,Middle.position);//Middle.localPosition.magnitude;
 		b = Mathf.Clamp(b,0.0001f,(a + c) - 0.0001f);
 		float middleAngle = Mathf.Acos(Mathf.Clamp((Mathf.Pow(a,2)+Mathf.Pow(c,2)-Mathf.Pow(b,2))/(2*a*c),-1,1)) * Mathf.Rad2Deg;
-		Vector3 middleToStartDir = Middle.InverseTransformPoint (Start.position);
-		Vector3 middleToEndDir = Middle.InverseTransformPoint (End.position);
-		Vector3 middleAxis = Vector3.Cross (-middleToStartDir,middleToEndDir);
-		Middle.localRotation *= Quaternion.AngleAxis (Vector3.Angle (middleToStartDir, middleToEndDir) - middleAngle,middleAxis);
+		Vector3 middleToStartDir = Middle.InverseTransformPoint (Start.position).normalized;
+		Vector3 middleToEndDir = Middle.InverseTransformPoint (End.position).normalized;
+		Vector3 middleAxis = Vector3.Cross (-middleToStartDir,middleToEndDir).normalized;
+		Middle.Rotate (middleAxis, Vector3.Angle (middleToStartDir, middleToEndDir) - middleAngle);
+		//Middle.localRotation *= Quaternion.AngleAxis (Vector3.Angle (middleToStartDir, middleToEndDir) - middleAngle,middleAxis);
 
-		Vector3 startToEndDir = Start.InverseTransformPoint (End.position);
-		Vector3 startToTargetDir = Start.InverseTransformPoint (TargetPosition);
-		Vector3 startAxis = Vector3.Cross (startToEndDir,startToTargetDir);
-		Start.localRotation *= Quaternion.AngleAxis (Vector3.Angle (startToEndDir, startToTargetDir), startAxis);
+		Vector3 startToEndDir = Start.InverseTransformPoint (End.position).normalized;
+		Vector3 startToTargetDir = Start.InverseTransformPoint (TargetPosition).normalized;
+
+		Vector3 startAxis = Vector3.Cross (startToEndDir,startToTargetDir).normalized;
+
+		Start.Rotate (startAxis,Vector3.Angle (startToEndDir, startToTargetDir));
+		//Start.rotation *= Quaternion.FromToRotation (startToEndDir,startToTargetDir);
+		//Start.localRotation *= Quaternion.AngleAxis (Vector3.Angle (startToEndDir, startToTargetDir), startAxis);
 
 	}
 

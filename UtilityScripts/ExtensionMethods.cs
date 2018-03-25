@@ -78,7 +78,7 @@ public static class ExtensionMethods
 		ikRotations (End,Middle,Start,TargetRotation);
 	}
 
-	private static void ikRotations (Transform Start,Transform Middle,Transform End,Quaternion TargetRotation){
+	private static void ikRotations (Transform End,Transform Middle,Transform Start,Quaternion TargetRotation){
 		Vector3 rotationAxis = Start.InverseTransformDirection((End.position - Start.position).normalized);
 		Quaternion deltaRotation = Quaternion.Inverse (End.rotation) * TargetRotation;
 		Vector3 angles;

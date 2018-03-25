@@ -65,8 +65,7 @@ public static class ExtensionMethods
 		Transform Start = Middle.parent;
 		
 		ActualIK(End,Middle,Start,TargetPosition);
-
-		End.rotation = TargetRotation;
+		ikRotations (End,Middle,Start,TargetRotation);
 
 	}
 
@@ -75,14 +74,28 @@ public static class ExtensionMethods
 		Vector3 TargetPosition = Vector3.Lerp (End.position,Target.position,positionsWeight);
 		Quaternion TargetRotation = Quaternion.Slerp (End.rotation,Target.rotation,rotationWeight);
 
-		//ActualIK(End,Middle,Start,TargetPosition);
-		Vector3 rotationAxis = Start.TransformDirection(Start.InverseTransformPoint (TargetPosition).normalized);
-		Quaternion deltaRotation = Quaternion.Inverse (End.rotation) * TargetRotation;
-
-		Start.localRotation *= Quaternion.Slerp(Quaternion.identity,deltaRotation,0.5f);
 		ActualIK(End,Middle,Start,TargetPosition);
-		End.rotation = TargetRotation;
+		ikRotations (End,Middle,Start,TargetRotation);
+	}
 
+	private static void ikRotations (Transform Start,Transform Middle,Transform End,Quaternion TargetRotation){
+		Vector3 rotationAxis = Start.InverseTransformDirection((End.position - Start.position).normalized);
+		Quaternion deltaRotation = Quaternion.Inverse (End.rotation) * TargetRotation;
+		Vector3 angles;
+		angles.x = Mathf.LerpAngle (0, deltaRotation.eulerAngles.x, Mathf.Abs (rotationAxis.x));
+		angles.y = Mathf.LerpAngle (0, deltaRotation.eulerAngles.y, Mathf.Abs (rotationAxis.y));
+		angles.z = Mathf.LerpAngle (0, deltaRotation.eulerAngles.z, Mathf.Abs (rotationAxis.z));
+
+		Start.rotation *= Quaternion.Slerp(Quaternion.identity,Quaternion.Euler(angles),0.33f);
+
+		rotationAxis = Middle.InverseTransformDirection((End.position - Middle.position).normalized);
+		angles.x = Mathf.LerpAngle (0, deltaRotation.eulerAngles.x, Mathf.Abs (rotationAxis.x));
+		angles.y = Mathf.LerpAngle (0, deltaRotation.eulerAngles.y, Mathf.Abs (rotationAxis.y));
+		angles.z = Mathf.LerpAngle (0, deltaRotation.eulerAngles.z, Mathf.Abs (rotationAxis.z));
+
+
+		Middle.rotation *= Quaternion.Slerp(Quaternion.identity,Quaternion.Euler(angles),0.33f);
+		End.rotation = TargetRotation;
 	}
 
 	public static void ik(Transform End,Vector3 TargetPosition, Quaternion TargetRotation,float positionsWeight,float rotationWeight){
@@ -92,10 +105,8 @@ public static class ExtensionMethods
 		TargetPosition = Vector3.Lerp (End.position,TargetPosition,positionsWeight);
 		TargetRotation = Quaternion.Slerp (End.rotation,TargetRotation,rotationWeight);
 
-		Quaternion deltaRotation = Quaternion.Inverse (End.rotation) * TargetRotation;
-		Start.localRotation *= Quaternion.Inverse(Quaternion.Slerp(Quaternion.identity,deltaRotation,0.33f));
 		ActualIK(End,Middle,Start,TargetPosition);
-		End.rotation = TargetRotation;
+		ikRotations (End,Middle,Start,TargetRotation);
 		
 	}
 

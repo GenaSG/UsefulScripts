@@ -10,7 +10,8 @@ namespace CustomTools
 
 		public void Copy(){
 			Mesh mesh = GetComponent<MeshFilter> ().sharedMesh;
-			mesh.uv = mesh.uv2;
+			mesh.uv = (Vector2[])mesh.uv2.Clone ();
+
 		}
 	}
 
